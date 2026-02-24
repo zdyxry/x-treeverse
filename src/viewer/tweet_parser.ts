@@ -29,14 +29,14 @@ export class Tweet {
      * Returns a URL to this tweet on Twitter.
      */
     getUrl() {
-        return `https://twitter.com/${this.username}/status/${this.id}`
+        return `https://x.com/${this.username}/status/${this.id}`
     }
 
     /**
      * Returns a URL to the profile that posted this tweet on Twitter.
      */
     getUserUrl() {
-        return `https://twitter.com/${this.username}`
+        return `https://x.com/${this.username}`
     }
 }
 
@@ -47,7 +47,7 @@ export interface TweetSet {
 }
 
 /**
- * Functions for parsing a response from the twitter API into Tweet and
+ * Functions for parsing a response from the legacy Twitter API into Tweet and
  * TweetContext objects.
  */
 export namespace TweetParser {
@@ -101,5 +101,127 @@ export namespace TweetParser {
         const tweets = parseTweets(response)
         const cursor = parseCursor(response)
         return { tweets, cursor, rootTweet }
+    }
+}
+
+/**
+ * Functions for parsing a response from the Twitter GraphQL API (TweetDetail)
+ * into Tweet and TweetContext objects.
+ */
+export namespace GraphQLTweetParser {
+    function extractTweetFromResult(result: any): Tweet | null {
+        if (!result) return null
+
+        // Handle TweetWithVisibilityResults wrapper
+        if (result.__typename === 'TweetWithVisibilityResults') {
+            result = result.tweet
+        }
+
+        if (!result || !result.legacy) return null
+
+        const legacy = result.legacy
+        const userResult = result.core?.user_results?.result
+        const userCore = userResult?.core
+        const userLegacy = userResult?.legacy
+        const userAvatar = userResult?.avatar
+
+        const userName = userCore?.name || userLegacy?.name
+        const userScreenName = userCore?.screen_name || userLegacy?.screen_name
+        const userAvatarUrl = userAvatar?.image_url || userLegacy?.profile_image_url_https
+
+        if (!userName && !userScreenName) return null
+
+        const tweet = new Tweet()
+        tweet.id = legacy.id_str || result.rest_id
+        tweet.bodyText = legacy.full_text || ''
+        tweet.bodyHtml = legacy.full_text || ''
+        tweet.name = userName || ''
+        tweet.username = userScreenName || ''
+        tweet.avatar = userAvatarUrl || ''
+        tweet.parent = legacy.in_reply_to_status_id_str || null
+        tweet.time = new Date(legacy.created_at).getTime()
+        tweet.replies = legacy.reply_count || 0
+
+        // Extract images from extended_entities (preferred) or entities
+        const mediaEntities = result.legacy.extended_entities?.media || result.legacy.entities?.media
+        if (mediaEntities) {
+            tweet.images = mediaEntities
+                .filter((m: any) => m.type === 'photo')
+                .map((m: any) => m.media_url_https)
+        }
+
+        return tweet
+    }
+
+    function parseEntries(entries: any[]): { tweets: Tweet[], cursor: string | null } {
+        const tweets: Tweet[] = []
+        let cursor: string | null = null
+
+        for (const entry of entries) {
+            const content = entry.content
+            if (!content) continue
+
+            if (content.__typename === 'TimelineTimelineItem') {
+                // Single tweet entry (focal tweet, ancestors, etc.)
+                const tweetResult = content.itemContent?.tweet_results?.result
+                const tweet = extractTweetFromResult(tweetResult)
+                if (tweet) tweets.push(tweet)
+            } else if (content.__typename === 'TimelineTimelineModule') {
+                // Conversation thread module (groups of replies)
+                if (content.items) {
+                    for (const item of content.items) {
+                        const itemContent = item.item?.itemContent
+                        if (!itemContent) continue
+
+                        if (itemContent.tweet_results?.result) {
+                            const tweet = extractTweetFromResult(itemContent.tweet_results.result)
+                            if (tweet) tweets.push(tweet)
+                        }
+                    }
+                }
+            } else if (content.__typename === 'TimelineTimelineCursor') {
+                if (content.cursorType === 'Bottom' || content.cursorType === 'ShowMoreThreads') {
+                    cursor = content.value
+                }
+            }
+        }
+
+        return { tweets, cursor }
+    }
+
+    export function parseResponse(rootTweet: string, response: any): TweetSet {
+        const allTweets: Tweet[] = []
+        let cursor: string | null = null
+
+        if (response?.errors) {
+            console.error('[Treeverse] GraphQL errors:', response.errors)
+        }
+
+        const instructions = response?.data?.threaded_conversation_with_injections_v2?.instructions || []
+        console.log('[Treeverse] Instructions count:', instructions.length,
+            'rootTweet:', rootTweet,
+            'response keys:', Object.keys(response || {}))
+
+        for (const instruction of instructions) {
+            if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
+                const result = parseEntries(instruction.entries)
+                allTweets.push(...result.tweets)
+                if (result.cursor) cursor = result.cursor
+            } else if (instruction.type === 'TimelineReplaceEntry' && instruction.entry) {
+                // Handle cursor replacement during pagination
+                const content = instruction.entry.content
+                if (content?.__typename === 'TimelineTimelineCursor') {
+                    if (content.cursorType === 'Bottom' || content.cursorType === 'ShowMoreThreads') {
+                        cursor = content.value
+                    }
+                }
+            }
+        }
+
+        console.log('[Treeverse] Parsed tweets:', allTweets.length,
+            'tweet IDs:', allTweets.map(t => t.id),
+            'cursor:', cursor)
+
+        return { tweets: allTweets, cursor, rootTweet }
     }
 }

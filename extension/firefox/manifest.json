@@ -16,7 +16,7 @@
     "default_title": "Treeverse"
   },
   "description": "",
-  "version": "4.0",
+  "version": "5.0",
   "background": {
     "scripts": [
       "resources/script/background.js"
@@ -26,6 +26,7 @@
     "tabs",
     "contextMenus",
     "https://*.twitter.com/",
+    "https://*.x.com/",
     "https://treeverse.app/"
   ],
   "web_accessible_resources": [

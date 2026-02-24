@@ -1,7 +1,9 @@
 enum Action {
     state = 'state',
     result = 'result',
-    fetch = 'fetch'
+    fetch = 'fetch',
+    graphql_info = 'graphql_info',
+    get_graphql_info = 'get_graphql_info'
 }
 
 enum State {
@@ -27,9 +29,19 @@ interface StateResponse {
     state: State
 }
 
+export interface GraphQLInfo {
+    queryId: string
+    features: string
+}
+
 export class ContentProxy {
     callbacks: Map<string, (response: FetchResponse) => void> = new Map()
     state: State = State.waiting
+    graphqlInfo: GraphQLInfo | null = null
+
+    getGraphQLInfo(): GraphQLInfo | null {
+        return this.graphqlInfo
+    }
 
     async delegatedFetch(url): Promise<Response> {
         return new Promise<Response>((resolve: (FetchResponse) => void) => {
@@ -41,6 +53,10 @@ export class ContentProxy {
             }
             window.postMessage(request, '*')
         })
+    }
+
+    requestGraphQLInfo() {
+        window.postMessage({ action: Action.get_graphql_info }, '*')
     }
 
     async inject() {
@@ -55,6 +71,8 @@ export class ContentProxy {
 
                     if (this.state === 'ready') {
                         chrome.runtime.sendMessage({message: 'ready'});
+                        // Request GraphQL info once ready
+                        this.requestGraphQLInfo()
                     }
 
                     break;
@@ -63,9 +81,13 @@ export class ContentProxy {
                     const callback = this.callbacks.get(resultData.key)
                     callback(resultData.result)
                     break;
+                case Action.graphql_info:
+                    if (message.data.graphqlInfo) {
+                        this.graphqlInfo = message.data.graphqlInfo as GraphQLInfo
+                    }
+                    break;
             }
         }, false)
         document.body.appendChild(scr);
     }
 }
-

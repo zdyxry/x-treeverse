@@ -55,10 +55,13 @@ export class TweetTree {
             }
         }
 
-        if (cursor) {
-            this.index.get(rootTweet).cursor = cursor
-        } else {
-            this.index.get(rootTweet).fullyLoaded = true
+        const rootNode = this.index.get(rootTweet)
+        if (rootNode) {
+            if (cursor) {
+                rootNode.cursor = cursor
+            } else {
+                rootNode.fullyLoaded = true
+            }
         }
         return count
     }

@@ -57,3 +57,13 @@ export interface APIResponse {
         ]
     }
 }
+
+/** GraphQL TweetDetail response */
+export interface GraphQLTweetDetailResponse {
+    data?: {
+        threaded_conversation_with_injections_v2?: {
+            instructions?: any[]
+        }
+    }
+    errors?: { message: string }[]
+}

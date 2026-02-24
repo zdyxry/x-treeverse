@@ -1,4 +1,4 @@
-export let matchTweetURL = 'https?://(?:mobile\\.)?twitter.com/(.+)/status/(\\d+)'
+export let matchTweetURL = 'https?://(?:mobile\\.)?(?:twitter|x)\\.com/(.+)/status/(\\d+)'
 export let matchTweetURLRegex = new RegExp(matchTweetURL)
 
 const tweetToLoad: {value?: string} = {}

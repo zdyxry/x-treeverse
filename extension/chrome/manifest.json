@@ -18,12 +18,12 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://twitter.com/*"],
+            "matches": ["https://twitter.com/*", "https://x.com/*", "https://mobile.twitter.com/*", "https://mobile.x.com/*"],
             "js": ["resources/script/viewer.js"]
         }
     ],
     "description": "",
-    "version": "4.1",
+    "version": "5.0",
     "background": {
         "scripts": [
             "resources/script/background.js"
@@ -33,7 +33,10 @@
         "activeTab",
         "declarativeContent",
         "https://api.twitter.com/",
+        "https://twitter.com/",
+        "https://x.com/",
         "https://mobile.twitter.com/",
+        "https://mobile.x.com/",
         "https://treeverse.app/"
     ],
     "web_accessible_resources": [
