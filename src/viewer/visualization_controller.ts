@@ -43,10 +43,13 @@ export class VisualizationController {
 
   private expandNode(node: TweetNode, retry: boolean = true) {
     const cursor = node.cursor
+    console.log(`[Treeverse] expandNode called, tweetId: ${node.tweet.id}, cursor: ${cursor}, retry: ${retry}`)
     this.server!
       .requestTweets(node.tweet.id, cursor)
       .then((tweetSet) => {
+        console.log(`[Treeverse] expandNode response received, tweets: ${tweetSet.tweets.length}`)
         let added = this.tweetTree!.addTweets(tweetSet)
+        console.log(`[Treeverse] expandNode added ${added} tweets`)
         if (added > 0) {
           this.vis.setTreeData(this.tweetTree!)
           if (node === this.tweetTree!.root) {
@@ -55,6 +58,9 @@ export class VisualizationController {
         } else if (retry) {
           this.expandNode(node, false)
         }
+      })
+      .catch((err) => {
+        console.error('[Treeverse] expandNode error:', err)
       })
   }
 
@@ -116,7 +122,15 @@ export class VisualizationController {
     })
     if (!offline) {
       this.vis.on('dblclick', (_event: Event, d: unknown) => {
-        this.expandNode(d as TweetNode, true)
+        // d3-dispatch v7: first argument is the data passed to .call()
+        // For dblclick, we pass datum.data (TweetNode) directly
+        console.log('[Treeverse] dblclick event received, d:', d)
+        const node = (d || _event) as TweetNode
+        if (!node || !node.tweet) {
+          console.error('[Treeverse] dblclick: invalid node', node)
+          return
+        }
+        this.expandNode(node, true)
       })
     }
   }
