@@ -76,6 +76,19 @@ export class FeedController {
             .attr('target', '_blank')
             .classed('text-xs text-base-content/50 hover:text-primary transition-colors', true)
             .text(`@${tweet.username}`)
+          
+          // Absolute timestamp
+          let date = new Date(tweet.time)
+          let timeStr = date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+          authorRow.append('span')
+            .classed('text-xs text-base-content/40 ml-auto', true)
+            .text(timeStr)
 
           let body = content.append('div')
             .classed('text-sm text-base-content/80 mt-1 leading-relaxed', true)

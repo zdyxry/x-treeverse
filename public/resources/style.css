@@ -1939,6 +1939,10 @@ input.tab:checked + .tab-content,
   margin-left: 0.25rem;
 }
 
+.ml-auto {
+  margin-left: auto;
+}
+
 .mt-1 {
   margin-top: 0.25rem;
 }
@@ -2070,6 +2074,10 @@ input.tab:checked + .tab-content,
 .text-base-content {
   --tw-text-opacity: 1;
   color: var(--fallback-bc,oklch(var(--bc)/var(--tw-text-opacity, 1)));
+}
+
+.text-base-content\/40 {
+  color: var(--fallback-bc,oklch(var(--bc)/0.4));
 }
 
 .text-base-content\/50 {
