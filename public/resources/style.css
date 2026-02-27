@@ -1886,7 +1886,7 @@ input.tab:checked + .tab-content,
 #tree {
   height: 100%;
   width: 100%;
-  background-color: #1a1a2e;
+  background-color: #f8fafc;
 }
 
 #treeContainer {
@@ -1986,7 +1986,7 @@ input.tab:checked + .tab-content,
   font-size: 0.75rem;
   line-height: 1rem;
   color: var(--fallback-bc,oklch(var(--bc)/0.8));
-  background-color: var(--fallback-b3,oklch(var(--b3)/0.8));
+  background-color: rgb(255 255 255 / 0.9);
   --tw-backdrop-blur: blur(4px);
   backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
   border-radius: 0.5rem;
@@ -1995,7 +1995,11 @@ input.tab:checked + .tab-content,
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   border-width: 1px;
-  border-color: var(--fallback-bc,oklch(var(--bc)/0.1));
+  --tw-border-opacity: 1;
+  border-color: var(--fallback-b3,oklch(var(--b3)/var(--tw-border-opacity, 1)));
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
 .legend-item {

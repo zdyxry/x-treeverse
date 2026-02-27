@@ -14,7 +14,7 @@
   /* Tree container */
   #tree {
     @apply w-full h-full;
-    background-color: #1a1a2e;
+    background-color: #f8fafc;
   }
   
   #treeContainer {
@@ -101,9 +101,10 @@
     @apply absolute bottom-4 left-4;
     @apply text-xs;
     @apply text-base-content/80;
-    @apply bg-base-300/80 backdrop-blur-sm;
+    @apply bg-white/90 backdrop-blur-sm;
     @apply px-4 py-2 rounded-lg;
-    @apply border border-base-content/10;
+    @apply border border-base-300;
+    @apply shadow-sm;
   }
 
   .legend-item {
