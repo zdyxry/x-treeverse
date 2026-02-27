@@ -236,7 +236,9 @@ export class TweetVisualization {
         group.append('use')
           .classed('has_more_icon', true)
           .attr('href', '#has_more')
-          .attr('transform', 'scale(0.5) translate(55 55)')
+          .attr('transform', 'translate(32 32) scale(0.4)')
+          .attr('x', -20)
+          .attr('y', -20)
       }
     })
     
@@ -304,10 +306,15 @@ export class TweetVisualization {
 
         if (hasMore) {
           console.log(`[Treeverse] Adding icon to new node ${d.data.getId().slice(0, 8)}`)
+          // Place icon at bottom-right corner of avatar (40x40)
+          // Symbol is 40x40 centered at 20,20, so scale(0.4) makes it 16x16
+          // Translate to position at (32, 32) which is bottom-right of avatar
           group.append('use')
             .classed('has_more_icon', true)
             .attr('href', '#has_more')
-            .attr('transform', 'scale(0.5) translate(55 55)')
+            .attr('transform', 'translate(32 32) scale(0.4)')
+            .attr('x', -20)  // Center the symbol (which is centered at 20,20)
+            .attr('y', -20)
         }
       })
       .attr('opacity', 0)

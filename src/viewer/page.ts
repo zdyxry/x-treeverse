@@ -3,13 +3,11 @@ export function createPage(container: HTMLElement) {
         <div id="treeContainer">
             <svg id="tree">
                 <defs>
-                    <symbol id="has_more">
-                        <g transform="translate(20 20)">
-                            <circle r="18" fill="#e11d48" stroke-width="2px" stroke="#fff" />
-                            <circle r="3" cx="-9" fill="#fff" />
-                            <circle r="3" cx="0" fill="#fff" />
-                            <circle r="3" cx="9" fill="#fff" />
-                        </g>
+                    <symbol id="has_more" viewBox="0 0 40 40">
+                        <circle cx="20" cy="20" r="18" fill="#e11d48" stroke="white" stroke-width="2" />
+                        <circle cx="11" cy="20" r="3" fill="white" />
+                        <circle cx="20" cy="20" r="3" fill="white" />
+                        <circle cx="29" cy="20" r="3" fill="white" />
                     </symbol>
                 </defs>
             </svg>
