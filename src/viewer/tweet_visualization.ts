@@ -205,61 +205,55 @@ export class TweetVisualization {
       this.selected = descendents.find((d) => d.data.getId() == this.selected!.data.getId()) || null
     }
 
+    console.log('[Treeverse] redraw called, descendents:', descendents.length)
+
     let nodes = this.nodes.selectAll('g')
       .data(descendents, (d: unknown) => (d as HierarchyPointNode<TweetNode>).data.getId())
 
+    console.log('[Treeverse] nodes selection size:', nodes.size(), 'enter:', nodes.enter().size(), 'exit:', nodes.exit().size())
+
     nodes.exit().remove()
 
+    // Update existing nodes
     nodes.transition()
       .duration(duration)
       .attr('transform', (d: unknown) => `translate(${(this.xscale * (d as HierarchyPointNode<TweetNode>).x) - 20} ${(this.yscale * (d as HierarchyPointNode<TweetNode>).y) - 20})`)
 
-    nodes.each(function(this: any, datum: unknown) {
-      let data = (datum as HierarchyPointNode<TweetNode>).data
-      let group = select(this)
-      const hasMore = data.hasMore()
-      console.log(`[Treeverse] Node ${data.getId().slice(0, 8)}... hasMore=${hasMore}, replies=${data.tweet.replies}, children=${data.children.size}`)
-      if (!hasMore) {
-        group.select('.has_more_icon').remove()
-      } else {
-        // Add has_more icon if it doesn't exist
-        if (group.select('.has_more_icon').empty()) {
-          console.log(`[Treeverse] Adding has_more icon for node ${data.getId().slice(0, 8)}...`)
-          group.append('use')
-            .classed('has_more_icon', true)
-            .attr('href', '#has_more')
-            .attr('transform', 'scale(0.5) translate(55 55)')
-        }
-      }
-    })
-
     nodes
       .classed('selected', (d: unknown) => d === this.selected)
       .attr('opacity', 1)
-
-    console.log('[Treeverse] creating nodes, count:', descendents.length)
     
+    // Update has_more icon for existing nodes
+    nodes.each(function(this: any, datum: unknown) {
+      const d = datum as PointNode
+      let group = select(this)
+      const hasMore = d.data.hasMore()
+      console.log(`[Treeverse] Update node ${d.data.getId().slice(0, 8)} hasMore=${hasMore}`)
+      if (!hasMore) {
+        group.select('.has_more_icon').remove()
+      } else if (group.select('.has_more_icon').empty()) {
+        console.log(`[Treeverse] Adding icon to existing node ${d.data.getId().slice(0, 8)}`)
+        group.append('use')
+          .classed('has_more_icon', true)
+          .attr('href', '#has_more')
+          .attr('transform', 'scale(0.5) translate(55 55)')
+      }
+    })
+    
+    const self = this
+    
+    // Create new nodes
     const enterNodes = nodes.enter()
       .append('g')
       .style('cursor', 'pointer')
       
-    console.log('[Treeverse] enter nodes count:', enterNodes.size())
-    
-    const self = this
+    console.log('[Treeverse] creating enter nodes:', enterNodes.size())
     
     enterNodes
-      // D3 v7: event is passed as first parameter
-      .on('mouseover', function(this: any, event: MouseEvent, d: unknown) {
-        console.log('[Treeverse] mouseover raw d:', d)
-        console.log('[Treeverse] mouseover this.datum:', select(this).datum())
+      .on('mouseover', function(this: any, _event: MouseEvent, d: unknown) {
         const datum = (d || select(this).datum()) as PointNode
-        console.log('[Treeverse] mouseover event, datum:', datum, 'selected:', self.selected)
-        if (!datum) {
-          console.error('[Treeverse] mouseover datum is undefined!')
-          return
-        }
+        if (!datum) return
         if (!self.selected) {
-          console.log('[Treeverse] calling hover listener with datum:', datum)
           self.listeners.call('hover', undefined, datum)
         }
       })
@@ -274,7 +268,7 @@ export class TweetVisualization {
       .on('dblclick', function(event: MouseEvent, d: unknown) {
         const datum = d as PointNode
         if (!datum) return
-        console.log('[Treeverse] calling dblclick listener')
+        console.log('[Treeverse] dblclick on node:', datum.data.getId())
         self.listeners.call('dblclick', undefined, datum.data)
         event.stopPropagation()
         self.selected = null
@@ -285,6 +279,8 @@ export class TweetVisualization {
         const d = datum as PointNode
         let group = select(this)
         let tweet = d.data.tweet
+        const hasMore = d.data.hasMore()
+        console.log(`[Treeverse] Creating new node ${d.data.getId().slice(0, 8)} hasMore=${hasMore}`)
 
         group.append('rect')
           .attr('height', 40)
@@ -306,15 +302,13 @@ export class TweetVisualization {
           .attr('rx', '4px')
           .attr('fill', 'none')
 
-        group.call((selection) => {
-          let data = (selection.datum() as unknown as PointNode).data
-          if (data.hasMore()) {
-            selection.append('use')
-              .classed('has_more_icon', true)
-              .attr('href', '#has_more')
-              .attr('transform', 'scale(0.5) translate(55 55)')
-          }
-        })
+        if (hasMore) {
+          console.log(`[Treeverse] Adding icon to new node ${d.data.getId().slice(0, 8)}`)
+          group.append('use')
+            .classed('has_more_icon', true)
+            .attr('href', '#has_more')
+            .attr('transform', 'scale(0.5) translate(55 55)')
+        }
       })
       .attr('opacity', 0)
       .transition().delay(duration)
