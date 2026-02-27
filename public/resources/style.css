@@ -1886,7 +1886,7 @@ input.tab:checked + .tab-content,
 #tree {
   height: 100%;
   width: 100%;
-  background-color: #f8fafc;
+  background-color: #e2e8f0;
 }
 
 #treeContainer {

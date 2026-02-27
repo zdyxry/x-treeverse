@@ -14,7 +14,7 @@
   /* Tree container */
   #tree {
     @apply w-full h-full;
-    background-color: #f8fafc;
+    background-color: #e2e8f0;
   }
   
   #treeContainer {
