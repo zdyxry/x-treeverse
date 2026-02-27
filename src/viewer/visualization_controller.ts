@@ -130,6 +130,8 @@ export class VisualizationController {
           console.error('[Treeverse] dblclick: invalid node', node)
           return
         }
+        // Remove the has_more icon immediately on double-click
+        this.vis.removeHasMoreIcon(node.tweet.id)
         this.expandNode(node, true)
       })
     }

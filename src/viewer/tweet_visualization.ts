@@ -35,6 +35,21 @@ export class TweetVisualization {
     this.listeners.on(eventType, callback)
   }
 
+  /**
+   * Remove the has_more icon from a node immediately (called on double-click)
+   */
+  removeHasMoreIcon(tweetId: string) {
+    console.log(`[Treeverse] Removing has_more icon for node ${tweetId}`)
+    // Find the node group by data ID and remove the icon
+    this.nodes.selectAll('g').each(function(this: any) {
+      const group = select(this)
+      const datum = group.datum() as PointNode | undefined
+      if (datum && datum.data && datum.data.getId() === tweetId) {
+        group.select('.has_more_icon').remove()
+      }
+    })
+  }
+
   private static treeWidth<T>(hierarchyNode: HierarchyNode<T>): number {
     let widths = new Map<number, number>()
     hierarchyNode.each((node) => {
