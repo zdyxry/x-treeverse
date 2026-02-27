@@ -280,7 +280,7 @@ export class TweetVisualization {
           .attr('fill', 'white')
 
         group.append('image')
-          .attr('xlink:href', tweet.avatar)
+          .attr('href', tweet.avatar)
           .attr('height', 40)
           .attr('width', 40)
 
@@ -299,7 +299,7 @@ export class TweetVisualization {
           if (data.hasMore()) {
             selection.append('use')
               .classed('has_more_icon', true)
-              .attr('xlink:href', '#has_more')
+              .attr('href', '#has_more')
               .attr('transform', 'scale(0.5) translate(55 55)')
           }
         })
