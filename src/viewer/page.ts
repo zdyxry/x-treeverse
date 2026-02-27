@@ -1,16 +1,7 @@
 export function createPage(container: HTMLElement) {
     let pageHTML = `
         <div id="treeContainer">
-            <svg id="tree">
-                <defs>
-                    <symbol id="has_more" viewBox="0 0 40 40">
-                        <circle cx="20" cy="20" r="18" fill="#e11d48" stroke="white" stroke-width="2" />
-                        <circle cx="11" cy="20" r="3" fill="white" />
-                        <circle cx="20" cy="20" r="3" fill="white" />
-                        <circle cx="29" cy="20" r="3" fill="white" />
-                    </symbol>
-                </defs>
-            </svg>
+            <svg id="tree"></svg>
             <div class="legend">
                 <span class="text-xs font-medium mb-1 block">Reply Times</span>
                 <span class="legend-item"><span class="w-2 h-2 rounded-full bg-rose-500"></span>5m</span>

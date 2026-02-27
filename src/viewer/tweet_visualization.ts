@@ -233,12 +233,19 @@ export class TweetVisualization {
         group.select('.has_more_icon').remove()
       } else if (group.select('.has_more_icon').empty()) {
         console.log(`[Treeverse] Adding icon to existing node ${d.data.getId().slice(0, 8)}`)
-        group.append('use')
+        const iconGroup = group.append('g')
           .classed('has_more_icon', true)
-          .attr('href', '#has_more')
-          .attr('transform', 'translate(32 32) scale(0.4)')
-          .attr('x', -20)
-          .attr('y', -20)
+          .attr('transform', 'translate(32 32)')
+        
+        iconGroup.append('circle')
+          .attr('r', 8)
+          .attr('fill', '#e11d48')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 1)
+        
+        iconGroup.append('circle').attr('cx', -4).attr('r', 1.5).attr('fill', 'white')
+        iconGroup.append('circle').attr('r', 1.5).attr('fill', 'white')
+        iconGroup.append('circle').attr('cx', 4).attr('r', 1.5).attr('fill', 'white')
       }
     })
     
@@ -306,15 +313,22 @@ export class TweetVisualization {
 
         if (hasMore) {
           console.log(`[Treeverse] Adding icon to new node ${d.data.getId().slice(0, 8)}`)
-          // Place icon at bottom-right corner of avatar (40x40)
-          // Symbol is 40x40 centered at 20,20, so scale(0.4) makes it 16x16
-          // Translate to position at (32, 32) which is bottom-right of avatar
-          group.append('use')
+          // Draw a red circle with 3 white dots at bottom-right of avatar
+          const iconGroup = group.append('g')
             .classed('has_more_icon', true)
-            .attr('href', '#has_more')
-            .attr('transform', 'translate(32 32) scale(0.4)')
-            .attr('x', -20)  // Center the symbol (which is centered at 20,20)
-            .attr('y', -20)
+            .attr('transform', 'translate(32 32)')
+          
+          // Red background circle (radius 8)
+          iconGroup.append('circle')
+            .attr('r', 8)
+            .attr('fill', '#e11d48')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 1)
+          
+          // Three white dots
+          iconGroup.append('circle').attr('cx', -4).attr('r', 1.5).attr('fill', 'white')
+          iconGroup.append('circle').attr('r', 1.5).attr('fill', 'white')
+          iconGroup.append('circle').attr('cx', 4).attr('r', 1.5).attr('fill', 'white')
         }
       })
       .attr('opacity', 0)
