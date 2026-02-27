@@ -216,8 +216,17 @@ export class TweetVisualization {
 
     nodes.each(function(this: any, datum: unknown) {
       let data = (datum as HierarchyPointNode<TweetNode>).data
+      let group = select(this)
       if (!data.hasMore()) {
-        select(this).select('.has_more_icon').remove()
+        group.select('.has_more_icon').remove()
+      } else {
+        // Add has_more icon if it doesn't exist
+        if (group.select('.has_more_icon').empty()) {
+          group.append('use')
+            .classed('has_more_icon', true)
+            .attr('href', '#has_more')
+            .attr('transform', 'scale(0.5) translate(55 55)')
+        }
       }
     })
 
