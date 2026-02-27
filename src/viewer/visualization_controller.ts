@@ -8,9 +8,6 @@ import { ContentProxy } from './proxy'
 
 export type PointNode = HierarchyPointNode<TweetNode>
 
-const expandText = 'Expand All'
-const cancelExpandText = 'Stop Expanding'
-
 /**
  * The controller for the main tree visualization.
  */
@@ -20,8 +17,6 @@ export class VisualizationController {
   private feed: FeedController
   private toolbar: Toolbar
   private server: TweetServer | null = null
-  private expandingTimer: number | null = null
-  private expandButton: HTMLButtonElement | null = null
 
   fetchTweets(tweetId: string) {
     console.log('[Treeverse] fetchTweets called')
@@ -64,26 +59,6 @@ export class VisualizationController {
       })
   }
 
-  expandOne() {
-    for (let tweetNode of this.tweetTree!.index.values()) {
-      if (tweetNode.hasMore()) {
-        this.expandNode(tweetNode, true)
-        return
-      }
-    }
-    this.stopExpanding()
-  }
-
-  stopExpanding() {
-    if (this.expandButton) {
-      this.expandButton.textContent = expandText
-    }
-    if (this.expandingTimer !== null) {
-      clearInterval(this.expandingTimer)
-      this.expandingTimer = null
-    }
-  }
-
   async copyAsMermaid() {
     if (!this.tweetTree) {
       console.error('[Treeverse] No tweet tree to copy')
@@ -106,27 +81,14 @@ export class VisualizationController {
     }
   }
 
-  expandAll() {
-    if (this.expandingTimer === null) {
-      if (this.expandButton) {
-        this.expandButton.textContent = cancelExpandText
-      }
-      this.expandingTimer = window.setInterval(this.expandOne.bind(this), 1000)
-    } else {
-      this.stopExpanding()
-    }
-  }
-
   constructor(proxy: ContentProxy | null = null) {
     const offline = proxy === null
     this.server = offline ? null : new TweetServer(proxy)
     this.feed = new FeedController(document.getElementById('feedContainer')!)
     this.vis = new TweetVisualization(document.getElementById('tree')!)
-    this.expandingTimer = null
 
     this.toolbar = new Toolbar(document.getElementById('toolbar')!)
     if (!offline) {
-      this.expandButton = this.toolbar.addButton('Expand All', this.expandAll.bind(this))
       this.toolbar.addButton('Copy as Mermaid', this.copyAsMermaid.bind(this))
     }
 
