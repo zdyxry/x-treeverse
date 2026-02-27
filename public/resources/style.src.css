@@ -51,6 +51,11 @@
     @apply p-4;
   }
 
+  /* Has more icon (3 dots) styling */
+  .has_more_icon {
+    pointer-events: none;
+  }
+
   /* Tweet content styles */
   .text {
     @apply whitespace-pre-wrap;

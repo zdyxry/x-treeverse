@@ -1937,6 +1937,12 @@ input.tab:checked + .tab-content,
   padding: 1rem;
 }
 
+/* Has more icon (3 dots) styling */
+
+.has_more_icon {
+  pointer-events: none;
+}
+
 /* Tweet content styles */
 
 .text {

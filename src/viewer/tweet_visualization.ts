@@ -217,11 +217,14 @@ export class TweetVisualization {
     nodes.each(function(this: any, datum: unknown) {
       let data = (datum as HierarchyPointNode<TweetNode>).data
       let group = select(this)
-      if (!data.hasMore()) {
+      const hasMore = data.hasMore()
+      console.log(`[Treeverse] Node ${data.getId().slice(0, 8)}... hasMore=${hasMore}, replies=${data.tweet.replies}, children=${data.children.size}`)
+      if (!hasMore) {
         group.select('.has_more_icon').remove()
       } else {
         // Add has_more icon if it doesn't exist
         if (group.select('.has_more_icon').empty()) {
+          console.log(`[Treeverse] Adding has_more icon for node ${data.getId().slice(0, 8)}...`)
           group.append('use')
             .classed('has_more_icon', true)
             .attr('href', '#has_more')
