@@ -38,7 +38,7 @@ export class TweetTree {
     this.index.get(tweetId)!.cursor = cursor
   }
 
-  addTweets(tweetSet: TweetSet) {
+  addTweets(tweetSet: TweetSet, expandedNodeId?: string) {
     let count = 0
     let { tweets, rootTweet, cursor } = tweetSet
 
@@ -55,12 +55,20 @@ export class TweetTree {
       }
     }
 
-    const rootNode = this.index.get(rootTweet)
-    if (rootNode) {
+    // Update the expanded node status
+    const targetNodeId = expandedNodeId || rootTweet
+    const targetNode = this.index.get(targetNodeId)
+    if (targetNode) {
       if (cursor) {
-        rootNode.cursor = cursor
+        targetNode.cursor = cursor
       } else {
-        rootNode.fullyLoaded = true
+        targetNode.fullyLoaded = true
+      }
+      
+      // If no new tweets were added and we have cursor, mark as fully loaded
+      // to prevent infinite loading when API returns empty results
+      if (count === 0 && !targetNode.fullyLoaded) {
+        targetNode.fullyLoaded = true
       }
     }
     return count
@@ -100,6 +108,8 @@ export class TweetNode {
     // replies from private accounts.
     if (this.fullyLoaded) return false
     if (this.cursor) return true
-    return this.children.size < this.tweet.replies
+    // If we have loaded all children (children count >= reply count), no more to load
+    if (this.children.size >= this.tweet.replies) return false
+    return true
   }
 }

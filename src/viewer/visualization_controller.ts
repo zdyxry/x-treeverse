@@ -48,9 +48,9 @@ export class VisualizationController {
       .requestTweets(node.tweet.id, cursor)
       .then((tweetSet) => {
         console.log(`[Treeverse] expandNode response received, tweets: ${tweetSet.tweets.length}`)
-        let added = this.tweetTree!.addTweets(tweetSet)
-        console.log(`[Treeverse] expandNode added ${added} tweets`)
-        if (added > 0) {
+        let added = this.tweetTree!.addTweets(tweetSet, node.tweet.id)
+        console.log(`[Treeverse] expandNode added ${added} tweets, node ${node.tweet.id} hasMore=${node.hasMore()}`)
+        if (added > 0 || !node.hasMore()) {
           this.vis.setTreeData(this.tweetTree!)
           if (node === this.tweetTree!.root) {
             this.vis.zoomToFit()
