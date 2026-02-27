@@ -86,6 +86,8 @@ export class TweetVisualization {
     // Set up zoom functionality.
     this.zoomBehavior = zoom<Element, unknown>()
       .scaleExtent([0, 2])
+      // Disable double-click to zoom, so we can use dblclick for expanding tweets
+      .filter((event) => event.type !== 'dblclick')
       .on('zoom', (event) => {
         let x = event.transform.x
         let y = event.transform.y
