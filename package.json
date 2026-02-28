@@ -1,8 +1,8 @@
 {
-  "name": "treeverse",
-  "version": "5.0.0",
-  "description": "Treeverse Chrome Extension - Visualize Twitter/X conversations as interactive trees",
-  "author": "Paul Butler",
+  "name": "x-treeverse",
+  "version": "0.1.0",
+  "description": "X-Treeverse Chrome Extension - Visualize X (Twitter) conversation threads as interactive trees - a community fork of Treeverse"
+  "author": "zdyxry (forked from Paul Butler)",
   "license": "MIT",
   "type": "module",
   "scripts": {
