@@ -1,5 +1,6 @@
 import { GraphQLTweetParser, TweetSet } from './tweet_parser'
 import { ContentProxy } from './proxy'
+import { RateLimiter } from './rate_limiter'
 
 // Default features for TweetDetail GraphQL endpoint.
 // Captured from live Twitter web client. May need periodic updates.
@@ -85,21 +86,24 @@ function buildGraphQLUrl(tweetId: string, cursor: string | null, queryId?: strin
  * Interfaces with Twitter GraphQL API server.
  */
 export class TweetServer {
-  constructor(private proxy: ContentProxy) { }
+  constructor(private proxy: ContentProxy, private rateLimiter: RateLimiter) { }
 
   /**
    * Requests the TweetContext for a given tweet and returns a promise.
+   * All requests go through the RateLimiter queue.
    */
   async requestTweets(tweetId: string, cursor: string | null): Promise<TweetSet> {
-    const graphqlInfo = this.proxy.getGraphQLInfo()
-    const url = buildGraphQLUrl(
-      tweetId,
-      cursor,
-      graphqlInfo?.queryId,
-      graphqlInfo?.features
-    )
+    return this.rateLimiter.enqueue(async () => {
+      const graphqlInfo = this.proxy.getGraphQLInfo()
+      const url = buildGraphQLUrl(
+        tweetId,
+        cursor,
+        graphqlInfo?.queryId,
+        graphqlInfo?.features
+      )
 
-    const response = await this.proxy.delegatedFetch(url)
-    return GraphQLTweetParser.parseResponse(tweetId, response as any)
+      const response = await this.proxy.delegatedFetch(url)
+      return GraphQLTweetParser.parseResponse(tweetId, response as any)
+    })
   }
 }

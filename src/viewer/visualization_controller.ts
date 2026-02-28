@@ -5,6 +5,7 @@ import { TweetNode, TweetTree } from './tweet_tree'
 import { TweetServer } from './tweet_server'
 import { Toolbar } from './toolbar'
 import { ContentProxy } from './proxy'
+import { RateLimiter } from './rate_limiter'
 
 export type PointNode = HierarchyPointNode<TweetNode>
 
@@ -17,6 +18,7 @@ export class VisualizationController {
   private feed: FeedController
   private toolbar: Toolbar
   private server: TweetServer | null = null
+  private rateLimitBanner: HTMLElement | null = null
 
   fetchTweets(tweetId: string) {
     console.log('[Treeverse] fetchTweets called')
@@ -85,9 +87,50 @@ export class VisualizationController {
     }
   }
 
+  private showRateLimitBanner(resetTimestamp: number) {
+    if (this.rateLimitBanner) return
+    const banner = document.createElement('div')
+    banner.className = 'fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-2 py-2 px-4 bg-warning text-warning-content text-sm font-medium shadow-md'
+    banner.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      </svg>
+      <span>Rate limited by Twitter/X. Requests paused, resuming in <strong id="rateLimitCountdown">--</strong>s</span>
+    `
+    document.body.appendChild(banner)
+    this.rateLimitBanner = banner
+  }
+
+  private hideRateLimitBanner() {
+    if (this.rateLimitBanner) {
+      this.rateLimitBanner.remove()
+      this.rateLimitBanner = null
+    }
+  }
+
+  private updateCountdown(secondsRemaining: number) {
+    const el = document.getElementById('rateLimitCountdown')
+    if (el) {
+      el.textContent = String(secondsRemaining)
+    }
+  }
+
   constructor(proxy: ContentProxy | null = null) {
     const offline = proxy === null
-    this.server = offline ? null : new TweetServer(proxy)
+    let rateLimiter: RateLimiter | null = null
+    if (!offline) {
+      rateLimiter = new RateLimiter()
+      rateLimiter.on('rateLimited', (resetTimestamp: number) => {
+        this.showRateLimitBanner(resetTimestamp)
+      })
+      rateLimiter.on('countdown', (seconds: number) => {
+        this.updateCountdown(seconds)
+      })
+      rateLimiter.on('rateLimitCleared', () => {
+        this.hideRateLimitBanner()
+      })
+    }
+    this.server = offline ? null : new TweetServer(proxy!, rateLimiter!)
     this.feed = new FeedController(document.getElementById('feedContainer')!)
     this.vis = new TweetVisualization(document.getElementById('tree')!)
 

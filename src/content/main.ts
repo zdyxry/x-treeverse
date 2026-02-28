@@ -90,16 +90,28 @@ function init() {
       originalFetch(message.data.url, {
         credentials: 'include',
         headers
-      }).then((x) => x.json()).then((x) => {
-        window.postMessage({
-          action: 'result',
-          key: message.data.key,
-          result: x
-        }, '*')
+      }).then((response) => {
+        const rateLimitInfo = {
+          limit: response.headers.get('x-rate-limit-limit'),
+          remaining: response.headers.get('x-rate-limit-remaining'),
+          reset: response.headers.get('x-rate-limit-reset'),
+        }
+        const status = response.status
+        return response.json().then((body) => {
+          window.postMessage({
+            action: 'result',
+            key: message.data.key,
+            status,
+            rateLimitInfo,
+            result: body
+          }, '*')
+        })
       }).catch((e) => {
         window.postMessage({
           action: 'result',
           key: message.data.key,
+          status: 0,
+          rateLimitInfo: null,
           result: { errors: [{ message: e.message }] }
         }, '*')
       })

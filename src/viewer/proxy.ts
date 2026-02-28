@@ -1,3 +1,5 @@
+import { RateLimitError, RateLimitInfo } from './rate_limiter'
+
 enum Action {
   state = 'state',
   result = 'result',
@@ -21,6 +23,8 @@ interface FetchRequest {
 interface FetchResponse {
   result: any,
   key: string,
+  status: number,
+  rateLimitInfo: RateLimitInfo | null,
   action: Action.result
 }
 
@@ -44,8 +48,17 @@ export class ContentProxy {
   }
 
   async delegatedFetch(url: string): Promise<any> {
-    return new Promise<any>((resolve: (response: any) => void) => {
-      this.callbacks.set(url, (resp: FetchResponse) => resolve(resp.result))
+    return new Promise<any>((resolve, reject) => {
+      this.callbacks.set(url, (resp: FetchResponse) => {
+        if (resp.status === 429) {
+          const resetTime = resp.rateLimitInfo?.reset
+            ? parseInt(resp.rateLimitInfo.reset, 10)
+            : Math.floor(Date.now() / 1000) + 900 // fallback: 15 min
+          reject(new RateLimitError(resetTime))
+        } else {
+          resolve(resp.result)
+        }
+      })
       const request: FetchRequest = {
         action: Action.fetch,
         key: url,
