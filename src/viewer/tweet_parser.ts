@@ -24,6 +24,7 @@ export class Tweet {
   parent: string | null = null
 
   images: string[] = []
+  videos: { thumbnailUrl: string, videoUrl: string }[] = []
 
   /**
    * Returns a URL to this tweet on Twitter.
@@ -144,12 +145,28 @@ export namespace GraphQLTweetParser {
     tweet.time = new Date(legacy.created_at).getTime()
     tweet.replies = legacy.reply_count || 0
 
-    // Extract images from extended_entities (preferred) or entities
+    // Extract media from extended_entities (preferred) or entities
     const mediaEntities = result.legacy.extended_entities?.media || result.legacy.entities?.media
     if (mediaEntities) {
       tweet.images = mediaEntities
         .filter((m: any) => m.type === 'photo')
         .map((m: any) => m.media_url_https)
+
+      for (const m of mediaEntities) {
+        if (m.type === 'video' || m.type === 'animated_gif') {
+          const variants = m.video_info?.variants?.filter(
+            (v: any) => v.content_type === 'video/mp4'
+          ) || []
+          if (variants.length > 0) {
+            // Pick highest bitrate mp4 variant
+            variants.sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0))
+            tweet.videos.push({
+              thumbnailUrl: m.media_url_https || '',
+              videoUrl: variants[0].url,
+            })
+          }
+        }
+      }
     }
 
     return tweet

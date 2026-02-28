@@ -34,6 +34,10 @@ export class VisualizationController {
     this.tweetTree = tree
     this.vis.setTreeData(tree)
     this.vis.zoomToFit()
+
+    // Show root tweet in sidebar by default
+    let rootNode = tree.toHierarchy() as unknown as PointNode
+    this.feed.setFeed(rootNode)
   }
 
   private expandNode(node: TweetNode, retry: boolean = true) {

@@ -6,6 +6,17 @@ import { PointNode } from './visualization_controller'
 import { TweetNode } from './tweet_tree'
 import { HierarchyPointNode } from 'd3-hierarchy'
 
+function showLightbox(imageUrl: string) {
+  const overlay = document.createElement('div')
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;cursor:pointer;'
+  const img = document.createElement('img')
+  img.src = imageUrl
+  img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;'
+  overlay.appendChild(img)
+  overlay.addEventListener('click', () => overlay.remove())
+  document.body.appendChild(overlay)
+}
+
 /**
  * Controller for the "feed" display that shows the conversation
  * leading up to the selected tweet.
@@ -104,15 +115,36 @@ export class FeedController {
 
           // Images
           if (tweet.images && tweet.images.length > 0) {
-            let imagesContainer = cardBody.append('div')
-              .classed('grid grid-cols-2 gap-2 mt-2', true)
+            const gridClass = tweet.images.length === 1
+              ? 'mt-2'
+              : 'grid grid-cols-2 gap-2 mt-2'
+            let imagesContainer = content.append('div')
+              .classed(gridClass, true)
             
-            imagesContainer.selectAll('img')
-              .data(tweet.images)
-              .enter()
-              .append('img')
-              .attr('src', (d: string) => d)
-              .classed('w-full h-32 object-cover rounded-lg', true)
+            for (const imgUrl of tweet.images) {
+              imagesContainer.append('img')
+                .attr('src', imgUrl)
+                .classed('w-full rounded-lg', true)
+                .style('max-height', '300px')
+                .style('object-fit', 'cover')
+                .style('cursor', 'pointer')
+                .on('click', function () {
+                  showLightbox(imgUrl)
+                })
+            }
+          }
+
+          // Videos
+          if (tweet.videos && tweet.videos.length > 0) {
+            for (const video of tweet.videos) {
+              content.append('video')
+                .attr('src', video.videoUrl)
+                .attr('poster', video.thumbnailUrl)
+                .attr('controls', '')
+                .attr('preload', 'metadata')
+                .classed('w-full rounded-lg mt-2', true)
+                .style('max-height', '300px')
+            }
           }
         })
         .style('opacity', 0)
